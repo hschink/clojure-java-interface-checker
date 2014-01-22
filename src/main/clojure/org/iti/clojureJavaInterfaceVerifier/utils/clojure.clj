@@ -1,7 +1,7 @@
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Clojure
-  (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]]))
-;  (:require org.iti.clojureJavaInterfaceVerifier.utils.Graph)
-;  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph Namespace Function]))
+  (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]])
+  (:require org.iti.clojureJavaInterfaceVerifier.utils.Graph)
+  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph Namespace Function]))
 
 (defn- match-named-group [regex group line]
   (let [matcher (re-matcher regex line)]
@@ -22,7 +22,7 @@
 
 (defn- parse-clojure-function [line]
   (let [function (is-function-string? line)
-        function-and-parameters (if function {function (func-params line)} nil)]
+        function-and-parameters (if function (Function. function (func-params line)) nil)]
     function-and-parameters))
 
 (defn- read-clojure-methods-by-namespace-from-file [lines]
