@@ -1,7 +1,8 @@
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Clojure
-  (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]])
+  (:use [clojure.pprint :only [pprint]]
+        [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]])
   (:require org.iti.clojureJavaInterfaceVerifier.utils.Graph)
-  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph Namespace Function]))
+  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function]))
 
 (defn- match-named-group [regex group line]
   (let [matcher (re-matcher regex line)]
@@ -13,43 +14,49 @@
 (defn- is-function-string? [line]
   (match-named-group #"^\(defn (?<fun>(\w|\-)*\?*)" "fun" line))
 
-(defn- parse-clojure-namespace [line]
-  (is-namespace-string? line))
+(defn- clojure-namespace [line]
+  (let [namespace (is-namespace-string? line)]
+    (if namespace (Namespace. namespace []) nil)))
 
 (defn- func-params [line]
   (let [params (match-named-group #"^\(defn (?<fun>\w(\w|\-)*)\?* \[(?<args>((\w|\-)*\s*)*)\]" "args" line)]
     (if params (.split params " ") '())))
 
-(defn- parse-clojure-function [line]
-  (let [function (is-function-string? line)
-        function-and-parameters (if function (Function. function (func-params line)) nil)]
-    function-and-parameters))
+(defn- clojure-function [line]
+  (let [function (is-function-string? line)]
+    (if function (Function. function (func-params line)) nil)))
+
+(defn- structure-element [line]
+  (let [namespace (clojure-namespace line)
+        func (clojure-function line)]
+    (or namespace func)))
+
+(defn- merge-clojure-ns-funcs [list structure-element]
+  (let [ns (last list)
+        structure-element-type (type structure-element)
+        is-ns (= Namespace structure-element-type)
+        is-func (= Function structure-element-type)
+        new-list (if is-ns
+                   (conj list structure-element)
+                   (conj (drop-last list) (assoc ns :functions (conj (.functions ns) structure-element))))]
+    new-list))
 
 (defn- read-clojure-methods-by-namespace-from-file [lines]
-  (loop [result {} 
-         namespace :default
-         [line & rest] (seq lines)]
-    (if (nil? line)
-      result
-      (let [new-namespace (parse-clojure-namespace line)
-            function-name (parse-clojure-function line)
-            current-list (or (get result namespace) '())
-            new-method-list (filter identity (cons function-name current-list))
-            new-namespace (or new-namespace namespace)
-            intermediate-result (merge result {new-namespace '()} {namespace new-method-list})]
-        (recur intermediate-result new-namespace rest)))))
+  (let [ns-and-funcs (filter identity (map structure-element lines))
+        namespaces (reduce merge-clojure-ns-funcs [(Namespace. :default [])] ns-and-funcs)]
+    (filter #(not (and (= :default (.name %)) (empty? (.functions %)))) namespaces)))
+
+(defn- file-element [lines-by-file]
+  (let [file-name (.getName (key lines-by-file))
+        lines (val lines-by-file)
+        namespaces (read-clojure-methods-by-namespace-from-file lines)]
+    (File. file-name namespaces)))
 
 (defn read-clojure-methods-by-namespace [files]
   (let [clojure-files (filter #(-> % (.getName) (.endsWith "clj")) files)
-        lines-by-files (reduce merge (map get-lines clojure-files))]
-    (loop [result {}
-           [lines-by-file & rest] (seq lines-by-files)]
-      (if (nil? lines-by-file)
-        result
-        (let [file (key lines-by-file)
-              lines (val lines-by-file)
-              intermediate-result {file (read-clojure-methods-by-namespace-from-file lines)}]
-          (recur (merge result intermediate-result) rest))))))
+        lines-by-files (reduce merge (map get-lines clojure-files))
+        result (map file-element lines-by-files)]
+    result))
 
 (defn clojure-source-files [path]
   (get-source-files path "clj"))

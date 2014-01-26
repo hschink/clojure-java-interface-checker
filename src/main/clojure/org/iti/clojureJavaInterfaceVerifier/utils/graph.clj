@@ -6,33 +6,18 @@
 
 (defrecord Function [name parameters])
 
-(defn- create-function-element [function]
-  (Function. (element (.name function)) (map #(element %) (.parameters function))))
+(defrecord Namespace [name functions])
 
-(defn- create-namespace-element [namespace]
-  (let [namespace-name (key namespace)
-        functions (val namespace)
-        key (if (keyword? namespace-name) namespace-name (element namespace-name))]
-    {key (concat (map create-function-element functions))}))
-
-(defn- create-namespace-elements [namespaces]
-  (reduce merge (map create-namespace-element (conj {} namespaces))))
-
-(defn- create-file-element [file]
-  {(element (.getName (key file))) (create-namespace-elements (val file))})
-
-(defn- create-elements [files]
-  (reduce merge (map create-file-element files)))
+(defrecord File [name namespaces])
 
 (defn- add-parameter-to-graph [graph source parameter]
-  (do
-    (.addVertex graph parameter)
-    (.addEdge graph source parameter)))
+  (let [parameter-element (element parameter)]
+    (do
+      (.addVertex graph parameter-element)
+      (.addEdge graph source parameter-element))))
 
 (defn- add-function-to-graph [graph source function]
-  (println ">> function")
-  (pprint function)
-  (let [element (:name function)]
+  (let [element (element (:name function))]
     (do
        (.addVertex graph element)
        (.addEdge graph source element)
@@ -40,33 +25,30 @@
          (map (partial add-parameter-to-graph graph element) (:parameters function))))))
 
 (defn- add-namespace-to-graph [graph file namespace]
-  (println ">> namespace")
-  (pprint namespace)
-  (let [key (key namespace)
-        source (if (keyword? key) file key)]
+  (let [ns-name (:name namespace)
+        is-default-ns (= :default ns-name)
+        ns-element (if is-default-ns nil (element (:name namespace)))
+        source (if is-default-ns file ns-element)]
     (do
-      (if (not (keyword? key))
+      (if (not is-default-ns)
         (do
-          (.addVertex graph key)
-          (.addEdge graph file key)))
+          (.addVertex graph ns-element)
+          (.addEdge graph file ns-element)))
       (doall
-        (map (partial add-function-to-graph graph source) (val namespace))))))
+        (map (partial add-function-to-graph graph source) (:functions namespace))))))
 
 (defn- add-file-to-graph [graph file]
-  (println ">> file")
-  (pprint file)
-  (let [element (key file)]
+  (let [file-element (element (:name file))]
     (do
-      (.addVertex graph element)
+      (.addVertex graph file-element)
       (doall
-        (map (partial add-namespace-to-graph graph element) (val file))))))
+        (map (partial add-namespace-to-graph graph file-element) (:namespaces file))))))
 
 (defn- add-elements-to-graph [graph files]
   (doall
     (map (partial add-file-to-graph graph) files)))
 
 (defn create-structure-graph [methods-by-namespace]
-  (let [graph (SimpleDirectedGraph. DefaultEdge)
-        elements (create-elements methods-by-namespace)]
-    (add-elements-to-graph graph elements)
+  (let [graph (SimpleDirectedGraph. DefaultEdge)]
+    (add-elements-to-graph graph methods-by-namespace)
     (StructureGraph. graph)))
