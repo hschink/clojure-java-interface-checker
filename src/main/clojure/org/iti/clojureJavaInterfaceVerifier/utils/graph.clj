@@ -2,7 +2,8 @@
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.Nodes :only [element]])
   (:import (org.iti.structureGraph StructureGraph)
-           (org.jgrapht.graph SimpleDirectedGraph DefaultEdge)))
+           (org.jgrapht.graph SimpleDirectedGraph DefaultEdge)
+           (org.iti.clojureJavaInterfaceVerifier.edges HasParameter HasMethod HasNamespace)))
 
 (defrecord Function [name parameters])
 
@@ -14,13 +15,13 @@
   (let [parameter-element (element parameter)]
     (do
       (.addVertex graph parameter-element)
-      (.addEdge graph source parameter-element))))
+      (.addEdge graph source parameter-element (HasParameter.)))))
 
 (defn- add-function-to-graph [graph source function]
   (let [element (element (:name function))]
     (do
        (.addVertex graph element)
-       (.addEdge graph source element)
+       (.addEdge graph source element (HasMethod.))
        (doall
          (map (partial add-parameter-to-graph graph element) (:parameters function))))))
 
@@ -33,7 +34,7 @@
       (if (not is-default-ns)
         (do
           (.addVertex graph ns-element)
-          (.addEdge graph file ns-element)))
+          (.addEdge graph file ns-element (HasNamespace.))))
       (doall
         (map (partial add-function-to-graph graph source) (:functions namespace))))))
 
