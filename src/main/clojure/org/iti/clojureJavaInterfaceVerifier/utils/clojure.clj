@@ -38,7 +38,7 @@
         is-func (= Function structure-element-type)
         new-list (if is-ns
                    (conj list structure-element)
-                   (conj (drop-last list) (assoc ns :functions (conj (.functions ns) structure-element))))]
+                   (conj (vec (drop-last list)) (assoc ns :functions (conj (.functions ns) structure-element))))]
     new-list))
 
 (defn- read-clojure-methods-by-namespace-from-file [lines]
