@@ -12,3 +12,10 @@
   (edn/read-string x))
 
 (ns org.iti.clojureJavaInterfaceVerifier.eeek)
+
+(defn add2 [x]
+  (+ x 2))
+
+(defn get-ast [x]
+  (pprint x)
+  (edn/read-string x))
