@@ -4,18 +4,16 @@
 
 ; The tests expect a File record with the following content
 ;
-;({:name "test.clj",
+; ({:name "test.clj",
 ;  :namespaces
-;  ({:name :default,
-;    :functions
-;    [{:name "get-ast", :parameters ["x"]}
-;     {:name "get-ast", :parameters ["x"]}]}
-;   {:name "org.iti.clojureJavaInterfaceVerifier.Test",
+;  ({:name "org.iti.clojureJavaInterfaceVerifier.Test",
 ;    :functions
 ;    [{:name "add2", :parameters ["x"]}
-;     {:name "add2", :parameters ["x"]}]}
+;     {:name "get-ast", :parameters ["x"]}]}
 ;   {:name "org.iti.clojureJavaInterfaceVerifier.eeek",
-;    :functions []})})
+;    :functions
+;    [{:name "add2", :parameters ["x"]}
+;     {:name "get-ast", :parameters ["x"]}]})})
 
 (def clojure-test-file-name "test.clj")
 
