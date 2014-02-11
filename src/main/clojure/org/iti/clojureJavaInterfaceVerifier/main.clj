@@ -21,7 +21,7 @@
             [clojure.tools.cli :refer [parse-opts]])
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.utils.Clojure :only [clojure-source-files read-clojure-methods-by-namespace]]
-        [org.iti.clojureJavaInterfaceVerifier.utils.Java :only [java-source-files]]
+        [org.iti.clojureJavaInterfaceVerifier.utils.Java :only [java-source-files clojure-calls]]
         [org.iti.clojureJavaInterfaceVerifier.utils.Graph :only [create-structure-graph]])
   (:gen-class))
 
@@ -60,5 +60,6 @@
           java-source-files (java-source-files (:folder options))
           methods-by-namespaces (read-clojure-methods-by-namespace clojure-source-files)
           graph (create-structure-graph methods-by-namespaces)]
-          (println)
-          (pprint (.getIdentifiers graph)))))
+          ;(println)
+          ;(pprint (.getIdentifiers graph))
+          (doall (clojure-calls java-source-files)))))

@@ -17,7 +17,26 @@
 ;;  along with sql-schema-comparer.  If not, see <http://www.gnu.org/licenses/>.
 
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Java
-  (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]]))
+  (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files]])
+  (:import (java.io FileInputStream)
+           (japa.parser JavaParser)
+           (japa.parser.ast.visitor VoidVisitorAdapter)
+           (japa.parser.ast.expr MethodCallExpr)
+           (org.iti.clojureJavaInterfaceVerifier.utils RtVisitor)))
 
 (defn java-source-files [path]
   (get-source-files path "java"))
+
+(defn- parse-java-file [file]
+  (with-open [in (FileInputStream. (.getAbsolutePath file))]
+    (JavaParser/parse in)))
+
+(defn- parse-java-files [files]
+  (map parse-java-file files))
+
+(defn clojure-calls [files]
+  (let [java-files (filter #(-> % (.getName) (.endsWith "java")) files)
+        cus (parse-java-files java-files)
+        visitor (RtVisitor. [])]
+    (clojure.pprint/pprint (count cus))
+    (map #(.visit visitor % nil) cus)))

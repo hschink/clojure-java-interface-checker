@@ -39,6 +39,8 @@ dependencies {
 
 clojure.aotCompile = true
 
+compileClojure.dependsOn(compileJava)
+
 jar {
     manifest {
         attributes("Main-Class": "org.iti.clojureJavaInterfaceVerifier.Main", "Class-Path": ".")
