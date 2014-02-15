@@ -37,6 +37,8 @@
 (defn clojure-calls [files]
   (let [java-files (filter #(-> % (.getName) (.endsWith "java")) files)
         cus (parse-java-files java-files)
-        visitor (RtVisitor. [])]
+        visitor (RtVisitor.)]
     (clojure.pprint/pprint (count cus))
-    (map #(.visit visitor % nil) cus)))
+    (do
+      (doall (map #(.visit visitor % (java.util.HashMap.)) cus))
+      (vals (.getNsByName visitor)))))

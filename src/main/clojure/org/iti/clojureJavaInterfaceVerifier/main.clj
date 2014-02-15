@@ -59,7 +59,8 @@
     (let [clojure-source-files (clojure-source-files (:folder options))
           java-source-files (java-source-files (:folder options))
           methods-by-namespaces (read-clojure-methods-by-namespace clojure-source-files)
-          graph (create-structure-graph methods-by-namespaces)]
+          graph (create-structure-graph methods-by-namespaces)
+          java-graph (doall (clojure-calls java-source-files))]
           ;(println)
           ;(pprint (.getIdentifiers graph))
-          (doall (clojure-calls java-source-files)))))
+          (pprint java-graph))))

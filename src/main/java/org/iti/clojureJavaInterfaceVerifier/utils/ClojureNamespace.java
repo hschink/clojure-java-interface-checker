@@ -1,9 +1,9 @@
 package org.iti.clojureJavaInterfaceVerifier.utils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
-class ClojureNamespace {
+public class ClojureNamespace {
 
 	private String name = "";
 
@@ -11,14 +11,14 @@ class ClojureNamespace {
 		return name;
 	}
 
-	private List<ClojureFunction> functions = new ArrayList<>();
+	private Set<ClojureFunction> functions = new HashSet<>();
 
-	public List<ClojureFunction> getFunctions() {
+	public Set<ClojureFunction> getFunctions() {
 		return functions;
 	}
 
-	public void setFunctions(List<ClojureFunction> functions) {
-		this.functions = functions;
+	public void addFunctions(ClojureFunction function) {
+		functions.add(function);
 	}
 
 	public ClojureNamespace(String name) {
