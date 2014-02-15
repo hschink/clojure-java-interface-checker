@@ -19,7 +19,7 @@
  *
  */
 
-package org.iti.clojureJavaInterfaceVerifier;
+package files;
 
 import java.io.IOException;
 
