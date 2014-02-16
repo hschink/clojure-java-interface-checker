@@ -17,6 +17,7 @@
 ;;  along with clojure-java-interface-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Graph
+  (:require org.iti.clojureJavaInterfaceVerifier.edges)
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.Nodes :only [element]])
   (:import (org.iti.structureGraph StructureGraph)
