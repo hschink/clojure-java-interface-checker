@@ -81,12 +81,12 @@
 (def move-method-id "test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add))")
 
 (deftest clojure-structure-graph
-  (let [graph (create-structure-graph file-version-original)
+  (let [graph (create-structure-graph [file-version-original])
         nodes (.getIdentifiers graph)]
     (check-graph-nodes nodes)))
 
 (deftest clojure-structure-graph-add-parameter
-  (let [graph (create-structure-graph file-version-add-parameter)
+  (let [graph (create-structure-graph [file-version-add-parameter])
         nodes (.getIdentifiers graph)]
     (check-graph-nodes nodes)
     (is (some #{add-parameter-id} nodes))))
@@ -102,21 +102,21 @@
       (is (= type mod-type)))))
 
 (deftest clojure2clojure-comparison-add-parameter
-  (let [graph-original (create-structure-graph file-version-original)
-        graph-add-parameter (create-structure-graph file-version-add-parameter)]
+  (let [graph-original (create-structure-graph [file-version-original])
+        graph-add-parameter (create-structure-graph [file-version-add-parameter])]
     (check-modification-of-type-exists graph-original graph-add-parameter add-parameter-id Type/NodeAdded)))
 
 (deftest clojure2clojure-comparison-remove-parameter
-  (let [graph-original (create-structure-graph file-version-add-parameter)
-        graph-remove-parameter (create-structure-graph file-version-original)]
+  (let [graph-original (create-structure-graph [file-version-add-parameter])
+        graph-remove-parameter (create-structure-graph [file-version-original])]
     (check-modification-of-type-exists graph-original graph-remove-parameter add-parameter-id Type/NodeDeleted)))
 
 (deftest clojure2clojure-comparison-rename-method
-  (let [graph-original (create-structure-graph file-version-original)
-        graph-rename-method (create-structure-graph file-version-rename-method)]
+  (let [graph-original (create-structure-graph [file-version-original])
+        graph-rename-method (create-structure-graph [file-version-rename-method])]
     (check-modification-of-type-exists graph-original graph-rename-method rename-method-id Type/NodeRenamed)))
 
 (deftest clojure2clojure-comparison-move-method
-  (let [graph-original (create-structure-graph file-version-original)
-        graph-move-method (create-structure-graph file-version-move-method)]
+  (let [graph-original (create-structure-graph [file-version-original])
+        graph-move-method (create-structure-graph [file-version-move-method])]
     (check-modification-of-type-exists graph-original graph-move-method move-method-id Type/NodeMoved)))
