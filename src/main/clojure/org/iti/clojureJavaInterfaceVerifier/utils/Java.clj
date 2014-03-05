@@ -22,7 +22,8 @@
            (japa.parser JavaParser)
            (japa.parser.ast.visitor VoidVisitorAdapter)
            (japa.parser.ast.expr MethodCallExpr)
-           (org.iti.clojureJavaInterfaceVerifier.utils RtVisitor)))
+           (org.iti.clojureJavaInterfaceVerifier.utils RtVisitor)
+           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function)))
 
 (defn java-source-files [path]
   (get-source-files path "java"))
@@ -34,11 +35,19 @@
 (defn- parse-java-files [files]
   (map parse-java-file files))
 
-(defn clojure-calls [files]
-  (let [java-files (filter #(-> % (.getName) (.endsWith "java")) files)
-        cus (parse-java-files java-files)
+(defn- convert [element]
+  (let [type-of-element (type element)]
+    (cond
+      (= type-of-element org.iti.clojureJavaInterfaceVerifier.utils.ClojureFunction) (Function. (.getName element) (.getParameters element))
+      (= type-of-element org.iti.clojureJavaInterfaceVerifier.utils.ClojureNamespace) (Namespace. (.getName element) (map convert (.getFunctions element))))))
+
+(defn- parse-clojure-calls [java-files]
+  (let [cus (parse-java-files java-files)
         visitor (RtVisitor.)]
-    (clojure.pprint/pprint (count cus))
     (do
       (doall (map #(.visit visitor % (java.util.HashMap.)) cus))
-      (vals (.getNsByName visitor)))))
+      (map convert (vals (.getNsByName visitor))))))
+
+(defn clojure-calls [files]
+  (let [java-files (filter #(-> % (.getName) (.endsWith "java")) files)]
+    (parse-clojure-calls java-files)))
