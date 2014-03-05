@@ -21,55 +21,45 @@
         [org.iti.clojureJavaInterfaceVerifier.utils.Graph :only [create-structure-graph]]
         clojure.test)
   (:import (org.iti.structureGraph.comparison StructureGraphComparer)
-           (org.iti.structureGraph.comparison.result Type)))
+           (org.iti.structureGraph.comparison.result Type)
+           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function)))
 
 (def ^:private file-version-original
-  [{:name "test.clj"
-    :namespaces
-    [{:name "org.iti.clojureJavaInterfaceVerifier.Test"
-      :functions
-      [{:name "add", :parameters ["x"]}
-       {:name "get-ast", :parameters ["x"]}]}
-     {:name "org.iti.clojureJavaInterfaceVerifier.eeek"
-      :functions
-      [{:name "add2", :parameters ["x"]}
-       {:name "get-ast", :parameters ["x"]}]}]}])
+  (let [func-add (Function. "add" ["x"])
+        func-get-ast (Function. "get-ast" ["x"])
+        func-add2 (Function. "add2" ["x"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast])
+        file-test (File. "test.clj" [ns-test ns-eeek])]
+    file-test))
 
 (def ^:private file-version-add-parameter
-  [{:name "test.clj"
-    :namespaces
-    [{:name "org.iti.clojureJavaInterfaceVerifier.Test"
-      :functions
-      [{:name "add", :parameters ["x" "y"]}
-       {:name "get-ast", :parameters ["x"]}]}
-     {:name "org.iti.clojureJavaInterfaceVerifier.eeek"
-      :functions
-      [{:name "add2", :parameters ["x"]}
-       {:name "get-ast", :parameters ["x"]}]}]}])
+  (let [func-add (Function. "add" ["x" "y"])
+        func-get-ast (Function. "get-ast" ["x"])
+        func-add2 (Function. "add2" ["x"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast])
+        file-test (File. "test.clj" [ns-test ns-eeek])]
+    file-test))
 
 (def ^:private file-version-rename-method
-  [{:name "test.clj"
-    :namespaces
-    [{:name "org.iti.clojureJavaInterfaceVerifier.Test"
-      :functions
-      [{:name "add", :parameters ["x"]}
-       {:name "get-ast", :parameters ["x"]}]}
-     {:name "org.iti.clojureJavaInterfaceVerifier.eeek"
-      :functions
-      [{:name "add2", :parameters ["x"]}
-       {:name "get-ast2", :parameters ["x"]}]}]}])
+  (let [func-add (Function. "add" ["x"])
+        func-get-ast (Function. "get-ast" ["x"])
+        func-add2 (Function. "add2" ["x"])
+        func-get-ast2 (Function. "get-ast2" ["x"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast2])
+        file-test (File. "test.clj" [ns-test ns-eeek])]
+    file-test))
 
 (def ^:private file-version-move-method
-  [{:name "test.clj"
-    :namespaces
-    [{:name "org.iti.clojureJavaInterfaceVerifier.Test"
-      :functions
-      [{:name "get-ast", :parameters ["x"]}]}
-     {:name "org.iti.clojureJavaInterfaceVerifier.eeek"
-      :functions
-      [{:name "add", :parameters ["x"]}
-       {:name "add2", :parameters ["x"]}
-       {:name "get-ast", :parameters ["x"]}]}]}])
+  (let [func-add (Function. "add" ["x"])
+        func-get-ast (Function. "get-ast" ["x"])
+        func-add2 (Function. "add2" ["x"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add func-add2 func-get-ast])
+        file-test (File. "test.clj" [ns-test ns-eeek])]
+    file-test))
 
 (defn- check-graph-nodes [nodes]
   (is (some #{"test.clj"} nodes))
