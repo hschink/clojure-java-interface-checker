@@ -19,6 +19,7 @@
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Graph
   (:require org.iti.clojureJavaInterfaceVerifier.edges)
   (:use [clojure.pprint :only [pprint]]
+        [clojure.reflect :only [reflect]]
         [org.iti.clojureJavaInterfaceVerifier.Nodes :only [element]])
   (:import (org.iti.structureGraph StructureGraph)
            (org.jgrapht.graph SimpleDirectedGraph DefaultEdge)
@@ -53,7 +54,7 @@
       (if (not is-default-ns)
         (do
           (.addVertex graph ns-element)
-          (.addEdge graph file ns-element (HasNamespace.))))
+          (if-not (nil? file) (.addEdge graph file ns-element (HasNamespace.)))))
       (doall
         (map (partial add-function-to-graph graph source) (:functions namespace))))))
 
@@ -64,9 +65,15 @@
       (doall
         (map (partial add-namespace-to-graph graph file-element) (:namespaces file))))))
 
+(defn- add-element-to-graph [graph element]
+  (let [type-of-element (type element)]
+    (cond
+      (= type-of-element Namespace) (add-namespace-to-graph graph nil element)
+      (= type-of-element File) (add-file-to-graph graph element))))
+
 (defn- add-elements-to-graph [graph files]
   (doall
-    (map (partial add-file-to-graph graph) files)))
+    (map (partial add-element-to-graph graph) files)))
 
 (defn create-structure-graph [methods-by-namespace]
   (let [graph (SimpleDirectedGraph. DefaultEdge)]
