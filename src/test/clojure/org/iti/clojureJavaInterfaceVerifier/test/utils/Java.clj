@@ -30,8 +30,8 @@
  (let [result (oicj/clojure-calls [java-test-file])
        namespace (first result)]
    (is (= (count result) 1))
-   (is (= (.getName namespace) "org.iti.clojureJavaInterfaceVerifier.Test"))
-   (is (= (count (.getFunctions namespace)) 1))
-   (let [func (first (.getFunctions namespace))]
-     (is (= (.getName func) "func"))
-     (is (= (count (.getParameters func)) 0)))))
+   (is (= (:name namespace) "org.iti.clojureJavaInterfaceVerifier.Test"))
+   (is (= (count (:functions namespace)) 1))
+   (let [func (first (:functions namespace))]
+     (is (= (:name func) "func"))
+     (is (= (count (:parameters func)) 0)))))

@@ -35,6 +35,7 @@ public class ClojureTests extends ClojureTest {
 
 		return Arrays.asList(new String[] {
 				NAMESPACE_PREFIX + "utils.Clojure",
+				NAMESPACE_PREFIX + "utils.Java",
 				NAMESPACE_PREFIX + "utils.Graph",
 	        });
 	}
