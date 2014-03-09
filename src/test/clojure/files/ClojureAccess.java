@@ -37,9 +37,12 @@ public class ClojureAccess {
 //		RT.loadResourceScript("src/main/clojure/org/iti/clojureJavaInterfaceVerifier/test.clj");
 		new clojure.lang.RT();
 		clojure.lang.Compiler.loadFile("src/main/clojure/org/iti/clojureJavaInterfaceVerifier/test.clj");
-		Var func = RT.var("org.iti.clojureJavaInterfaceVerifier.Test", "func");
+		Var func = RT.var("org.iti.clojureJavaInterfaceVerifier.Test", "func-add");
+		Var getAst = RT.var("org.iti.clojureJavaInterfaceVerifier.Test", "get-ast");
 
 		func.invoke();
+
+		getAst.invoke("x");
 	}
 
 }

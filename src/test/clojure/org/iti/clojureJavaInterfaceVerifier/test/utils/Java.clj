@@ -31,7 +31,13 @@
        namespace (first result)]
    (is (= (count result) 1))
    (is (= (:name namespace) "org.iti.clojureJavaInterfaceVerifier.Test"))
-   (is (= (count (:functions namespace)) 1))
-   (let [func (first (:functions namespace))]
-     (is (= (:name func) "func"))
-     (is (= (count (:parameters func)) 0)))))
+   (is (= (count (:functions namespace)) 2))
+   (let [func-add (second(:functions namespace))
+         get-ast (first (:functions namespace))]
+     (is (= (:name func-add) "func-add"))
+     (is (= (:name get-ast) "get-ast"))
+     (is (= (count (:parameters func-add)) 0))
+     (is (= (count (:parameters get-ast)) 1))
+     (let [get-ast-param (first (:parameters get-ast))]
+       (clojure.pprint/pprint get-ast-param)
+       (is (= get-ast-param "0"))))))
