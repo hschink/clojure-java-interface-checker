@@ -22,6 +22,8 @@
         [clojure.reflect :only [reflect]]
         [org.iti.clojureJavaInterfaceVerifier.Nodes :only [element]])
   (:import (org.iti.structureGraph StructureGraph)
+           (org.iti.structureGraph.comparison SimpleStructureGraphComparer)
+           (org.iti.structureGraph.comparison.result Type)
            (org.jgrapht.graph SimpleDirectedGraph DefaultEdge)
            (org.iti.clojureJavaInterfaceVerifier.edges HasParameter HasMethod HasNamespace)))
 
@@ -79,3 +81,35 @@
   (let [graph (SimpleDirectedGraph. DefaultEdge)]
     (add-elements-to-graph graph methods-by-namespace)
     (StructureGraph. graph)))
+
+(defn- compare-clojure-java-graphs [clojure-graph java-graph]
+  (let [comparer (SimpleStructureGraphComparer.)
+        clojure-structure-graph (create-structure-graph clojure-graph)
+        java-structure-graph (create-structure-graph java-graph)
+        result (.compare comparer clojure-structure-graph java-structure-graph)]
+    result))
+
+(declare normalize-clojure-funcs)
+
+(defn- normalize-clojure-func [clojure-element]
+  (let [type-of-element (type clojure-element)
+        name (:name clojure-element)]
+    (cond
+      (= type-of-element File) (File. name (normalize-clojure-funcs (:namespaces clojure-element)))
+      (= type-of-element Namespace) (Namespace. name (normalize-clojure-funcs (:functions clojure-element)))
+      (= type-of-element Function) (Function. name (map str (range 0 (count (:parameters clojure-element))))))))
+
+(defn- normalize-clojure-funcs [clojure-functions]
+  (map normalize-clojure-func clojure-functions))
+
+(defn- is-referenced-ns? [ns-list ns]
+  (some #(.startsWith ns %) ns-list))
+
+(defn check-clojure2java-function-mapping [clojure-functions java2clojure-calls]
+  (let [referenced-ns (map :name java2clojure-calls)
+        clojure-funcs-without-files (mapcat :namespaces clojure-functions)
+        normalized-clojure-funcs (normalize-clojure-funcs clojure-funcs-without-files)
+        result (compare-clojure-java-graphs normalized-clojure-funcs java2clojure-calls)
+        modifications (.getModifications result)
+        filtered-mods (filter #(is-referenced-ns? referenced-ns (key %)) modifications)]
+    filtered-mods))
