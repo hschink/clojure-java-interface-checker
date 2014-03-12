@@ -20,6 +20,7 @@
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.utils.Graph :only [create-structure-graph]]
         clojure.test)
+  (:require [org.iti.clojureJavaInterfaceVerifier.utils.Graph :as oicg])
   (:import (org.iti.structureGraph.comparison StructureGraphComparer)
            (org.iti.structureGraph.comparison.result Type)
            (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function)))
@@ -120,3 +121,23 @@
   (let [graph-original (create-structure-graph [file-version-original])
         graph-move-method (create-structure-graph [file-version-move-method])]
     (check-modification-of-type-exists graph-original graph-move-method move-method-id Type/NodeMoved)))
+
+(def ^:private clojure-calls-in-java
+  (let [func-add (Function. "add" ["0"])
+        func-get-ast (Function. "get-ast" ["0"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])]
+    ns-test))
+
+(deftest check-valid-clojure2java-function-mapping
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java])]
+    (is (empty? result))))
+
+(deftest check-missing-parameter-in-clojure2java-function-mapping
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-add-parameter] [clojure-calls-in-java])]
+    (is (count result) 1)
+    (let [modification (first result)
+          path (key modification)
+          schema-mod (val modification)
+          type (.getType schema-mod)]
+      (is (= path "org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(1))"))
+      (is (= type Type/NodeDeleted)))))
