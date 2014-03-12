@@ -39,5 +39,4 @@
      (is (= (count (:parameters func-add)) 0))
      (is (= (count (:parameters get-ast)) 1))
      (let [get-ast-param (first (:parameters get-ast))]
-       (clojure.pprint/pprint get-ast-param)
        (is (= get-ast-param "0"))))))
