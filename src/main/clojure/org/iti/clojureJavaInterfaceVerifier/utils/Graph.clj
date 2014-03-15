@@ -111,5 +111,5 @@
         normalized-clojure-funcs (normalize-clojure-funcs clojure-funcs-without-files)
         result (compare-clojure-java-graphs normalized-clojure-funcs java2clojure-calls)
         modifications (.getModifications result)
-        filtered-mods (filter #(is-referenced-ns? referenced-ns (key %)) modifications)]
+        filtered-mods (into {} (filter #(is-referenced-ns? referenced-ns (key %)) modifications))]
     filtered-mods))
