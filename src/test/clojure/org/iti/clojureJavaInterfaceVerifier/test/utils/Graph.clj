@@ -135,6 +135,24 @@
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])]
     ns-test))
 
+(def ^:private clojure-calls-in-java-with-superfluous-parameter
+  (let [func-add (Function. "add" ["0", "1"])
+        func-get-ast (Function. "get-ast" ["0"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])]
+    ns-test))
+
+(def ^:private clojure-calls-in-java-of-missing-function
+  (let [func-add (Function. "add" ["0"])
+        func-get-ast (Function. "get-ast" ["0"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add func-get-ast])]
+    ns-test))
+
+(def ^:private clojure-calls-in-java-of-missing-namespace
+  (let [func-add (Function. "add" ["0"])
+        func-get-ast (Function. "get-ast" ["0"])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.ups" [func-add func-get-ast])]
+    ns-test))
+
 (deftest check-valid-clojure2java-function-mapping
   (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java])]
     (is (empty? result))))
@@ -144,3 +162,27 @@
         expected "org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(1))"]
     (is (= (count result) 1))
     (check-modification-of-type-exists result expected Type/NodeDeleted)))
+
+(deftest check-superfluous-parameter-in-clojure2java-function-mapping
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-with-superfluous-parameter])
+        expected "org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(1))"]
+    (is (= (count result) 1))
+    (check-modification-of-type-exists result expected Type/NodeAdded)))
+
+(deftest check-missing-function-in-clojure2java-function-mapping
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-missing-function])]
+    (is (= (count result) 4))
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add2)" Type/NodeDeleted)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add2.HasParameter(0))" Type/NodeDeleted)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add)" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add.HasParameter(0))" Type/NodeAdded)))
+
+(deftest check-missing-namespace-in-clojure2java-function-mapping
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-missing-namespace])]
+    (is (= (count result) 6))
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod" Type/PathAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(get-ast)" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(get-ast.HasParameter(0))" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(add)" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(add.HasParameter(0))" Type/NodeAdded)))
