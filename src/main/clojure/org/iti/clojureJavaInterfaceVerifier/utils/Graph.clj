@@ -125,10 +125,15 @@
         removed-subsequent-mods (into {} (filter #(path-in-list? shortest-pathes (key %)) modifications))]
     removed-subsequent-mods))
 
+(defn- remove-none-parameter-node-additions [modifications]
+  (let [check (fn [mod] (or (not (empty? (re-seq #"HasParameter" (key mod)))) (not= (.getType (val mod)) Type/NodeDeleted)))]
+  (into {} (filter check modifications))))
+
 (defn- filter-modifications [referenced-ns modifications]
   (let [removed-unreferenced-ns (into {} (filter #(is-referenced-ns? referenced-ns (key %)) modifications))
-        removed-subsequent-mods (remove-subsequent-mods referenced-ns removed-unreferenced-ns)]
-    removed-subsequent-mods))
+        removed-subsequent-mods (remove-subsequent-mods referenced-ns removed-unreferenced-ns)
+        removed-none-parameter-node-additions (remove-none-parameter-node-additions removed-subsequent-mods)]
+    removed-none-parameter-node-additions))
 
 (defn check-clojure2java-function-mapping [clojure-functions java2clojure-calls]
   (let [referenced-ns (map :name java2clojure-calls)
