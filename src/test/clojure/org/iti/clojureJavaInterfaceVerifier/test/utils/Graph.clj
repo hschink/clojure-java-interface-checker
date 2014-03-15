@@ -92,35 +92,42 @@
     (check-graph-nodes nodes)
     (is (some #{add-parameter-id} nodes))))
 
-(defn- check-modification-of-type-exists [old-graph new-graph key mod-type]
-  (let[comparer (StructureGraphComparer.)
-       result (.compare comparer old-graph new-graph)
-       modifications (.getModifications result)]
-    (is (not (empty? modifications)))
-    (is (not (nil? (get modifications key))))
-    (let [modification (get modifications key)
-          type (.getType modification)]
-      (is (= type mod-type)))))
+(defn- modifications [old-graph new-graph]
+  (let [comparer (StructureGraphComparer.)
+        result (.compare comparer old-graph new-graph)
+        modifications (.getModifications result)]
+    modifications))
+
+(defn- check-modification-of-type-exists [modifications key mod-type]
+  (is (not (empty? modifications)))
+  (is (not (nil? (get modifications key))))
+  (let [modification (get modifications key)
+        type (.getType modification)]
+    (is (= type mod-type))))
 
 (deftest clojure2clojure-comparison-add-parameter
   (let [graph-original (create-structure-graph [file-version-original])
-        graph-add-parameter (create-structure-graph [file-version-add-parameter])]
-    (check-modification-of-type-exists graph-original graph-add-parameter add-parameter-id Type/NodeAdded)))
+        graph-add-parameter (create-structure-graph [file-version-add-parameter])
+        modifications (modifications graph-original graph-add-parameter)]
+    (check-modification-of-type-exists modifications add-parameter-id Type/NodeAdded)))
 
 (deftest clojure2clojure-comparison-remove-parameter
   (let [graph-original (create-structure-graph [file-version-add-parameter])
-        graph-remove-parameter (create-structure-graph [file-version-original])]
-    (check-modification-of-type-exists graph-original graph-remove-parameter add-parameter-id Type/NodeDeleted)))
+        graph-remove-parameter (create-structure-graph [file-version-original])
+        modifications (modifications graph-original graph-remove-parameter)]
+    (check-modification-of-type-exists modifications add-parameter-id Type/NodeDeleted)))
 
 (deftest clojure2clojure-comparison-rename-method
   (let [graph-original (create-structure-graph [file-version-original])
-        graph-rename-method (create-structure-graph [file-version-rename-method])]
-    (check-modification-of-type-exists graph-original graph-rename-method rename-method-id Type/NodeRenamed)))
+        graph-rename-method (create-structure-graph [file-version-rename-method])
+        modifications (modifications graph-original graph-rename-method)]
+    (check-modification-of-type-exists modifications rename-method-id Type/NodeRenamed)))
 
 (deftest clojure2clojure-comparison-move-method
   (let [graph-original (create-structure-graph [file-version-original])
-        graph-move-method (create-structure-graph [file-version-move-method])]
-    (check-modification-of-type-exists graph-original graph-move-method move-method-id Type/NodeMoved)))
+        graph-move-method (create-structure-graph [file-version-move-method])
+        modifications (modifications graph-original graph-move-method)]
+    (check-modification-of-type-exists modifications move-method-id Type/NodeMoved)))
 
 (def ^:private clojure-calls-in-java
   (let [func-add (Function. "add" ["0"])
@@ -133,11 +140,7 @@
     (is (empty? result))))
 
 (deftest check-missing-parameter-in-clojure2java-function-mapping
-  (let [result (oicg/check-clojure2java-function-mapping [file-version-add-parameter] [clojure-calls-in-java])]
-    (is (count result) 1)
-    (let [modification (first result)
-          path (key modification)
-          schema-mod (val modification)
-          type (.getType schema-mod)]
-      (is (= path "org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(1))"))
-      (is (= type Type/NodeDeleted)))))
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-add-parameter] [clojure-calls-in-java])
+        expected "org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(1))"]
+    (is (= (count result) 1))
+    (check-modification-of-type-exists result expected Type/NodeDeleted)))
