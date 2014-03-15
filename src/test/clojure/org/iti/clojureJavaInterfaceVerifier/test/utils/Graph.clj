@@ -171,8 +171,7 @@
 
 (deftest check-missing-function-in-clojure2java-function-mapping
   (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-missing-function])]
-    (is (= (count result) 2))
-    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add2)" Type/NodeDeleted)
+    (is (= (count result) 1))
     (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add)" Type/NodeAdded)))
 
 (deftest check-missing-namespace-in-clojure2java-function-mapping
