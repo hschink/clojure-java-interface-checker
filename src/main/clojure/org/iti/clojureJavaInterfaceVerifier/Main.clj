@@ -22,7 +22,7 @@
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.utils.Clojure :only [clojure-source-files read-clojure-methods-by-namespace]]
         [org.iti.clojureJavaInterfaceVerifier.utils.Java :only [java-source-files clojure-calls]]
-        [org.iti.clojureJavaInterfaceVerifier.utils.Graph :only [create-structure-graph]])
+        [org.iti.clojureJavaInterfaceVerifier.utils.Graph :only [check-clojure2java-function-mapping]])
   (:gen-class))
 
 (def cli-options
@@ -49,19 +49,20 @@
   (println msg)
   (System/exit status))
 
+(defn- print-result [modifications]
+  (let [path (key modifications)
+        modification (val modifications)]
+    (println (str (.getType modification) ": " path))))
+
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)]
     (cond
       (:help options) (exit 0 (usage summary))
-      ;;(not= (count arguments) 1) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))
     ;; Execute program with options
     (let [clojure-source-files (clojure-source-files (:folder options))
           java-source-files (java-source-files (:folder options))
-          methods-by-namespaces (read-clojure-methods-by-namespace clojure-source-files)
-          ;graph (create-structure-graph methods-by-namespaces)
-          java-clojure-calls (doall (clojure-calls java-source-files))
-          java-graph (create-structure-graph java-clojure-calls)]
-          ;(println)
-          ;(pprint (.getIdentifiers graph))
-          (pprint (.getIdentifiers java-graph)))))
+          clojure-functions (read-clojure-methods-by-namespace clojure-source-files)
+          java2clojure-calls (doall (clojure-calls java-source-files))
+          result (check-clojure2java-function-mapping clojure-functions java2clojure-calls)]
+      (doall (map print-result result)))))
