@@ -105,11 +105,36 @@
 (defn- is-referenced-ns? [ns-list ns]
   (some #(.startsWith ns %) ns-list))
 
+(defn- number-of-dots [path]
+  (count (filter #(= (str %) ".") path)))
+
+(defn- shortest-path-by-ns [pathes ns]
+  (let [pathes-by-ns (filter #(.startsWith % ns) pathes)]
+    (if (empty? pathes-by-ns)
+      '()
+      (let [shortes-dot-count (apply min (map number-of-dots pathes-by-ns))
+            shortest-pathes-by-ns (filter #(= (number-of-dots %) shortes-dot-count) pathes-by-ns)]
+        shortest-pathes-by-ns))))
+
+(defn- path-in-list? [list path]
+  (some #(= path %) list))
+
+(defn- remove-subsequent-mods [referenced-ns modifications]
+  (let [pathes (keys modifications)
+        shortest-pathes (mapcat (partial shortest-path-by-ns pathes) referenced-ns)
+        removed-subsequent-mods (into {} (filter #(path-in-list? shortest-pathes (key %)) modifications))]
+    removed-subsequent-mods))
+
+(defn- filter-modifications [referenced-ns modifications]
+  (let [removed-unreferenced-ns (into {} (filter #(is-referenced-ns? referenced-ns (key %)) modifications))
+        removed-subsequent-mods (remove-subsequent-mods referenced-ns removed-unreferenced-ns)]
+    removed-subsequent-mods))
+
 (defn check-clojure2java-function-mapping [clojure-functions java2clojure-calls]
   (let [referenced-ns (map :name java2clojure-calls)
         clojure-funcs-without-files (mapcat :namespaces clojure-functions)
         normalized-clojure-funcs (normalize-clojure-funcs clojure-funcs-without-files)
         result (compare-clojure-java-graphs normalized-clojure-funcs java2clojure-calls)
         modifications (.getModifications result)
-        filtered-mods (into {} (filter #(is-referenced-ns? referenced-ns (key %)) modifications))]
+        filtered-mods (filter-modifications referenced-ns modifications)]
     filtered-mods))
