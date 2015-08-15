@@ -1,6 +1,6 @@
 # Clojure Java Interface Verifier #
 
-[![Build Status](https://travis-ci.org/hschink/clojure-java-interface-verifier.png?branch=master)](https://travis-ci.org/hschink/clojure-java-interface-verifier)
+[![Build Status](https://travis-ci.org/hschink/clojure-java-interface-checker.png?branch=master)](https://travis-ci.org/hschink/clojure-java-interface-checker)
 
 **Experimental** library to compare Clojure and Java source code structure
 
