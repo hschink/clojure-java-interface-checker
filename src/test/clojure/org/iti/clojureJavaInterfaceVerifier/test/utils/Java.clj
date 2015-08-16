@@ -32,10 +32,12 @@
    (is (= (count result) 1))
    (is (= (:name namespace) "org.iti.clojureJavaInterfaceVerifier.Test"))
    (is (= (count (:functions namespace)) 2))
-   (let [func-add (second(:functions namespace))
-         get-ast (first (:functions namespace))]
-     (is (= (:name func-add) "func-add"))
-     (is (= (:name get-ast) "get-ast"))
+   (let [get-fn-by-name (fn [name list]
+                          (some #(when (= name (:name %)) %) list))
+         func-add (get-fn-by-name "func-add" (:functions namespace))
+         get-ast (get-fn-by-name "get-ast" (:functions namespace))]
+     (is (not (nil? func-add)))
+     (is (not (nil? get-ast)))
      (is (= (count (:parameters func-add)) 0))
      (is (= (count (:parameters get-ast)) 1))
      (let [get-ast-param (first (:parameters get-ast))]
