@@ -109,9 +109,5 @@
   (let [clojure-funcs-without-files (mapcat :namespaces clojure-functions)
         normalized-clojure-funcs (normalize-clojure-funcs clojure-funcs-without-files)
         result (compare-clojure-java-graphs normalized-clojure-funcs java2clojure-calls)
-        check (fn [mod]
-                (let [type (.getType (val mod))]
-                  (or (= type Type/NodeAdded)
-                      (= type Type/NodeDeleted))))
-        modifications (into {} (filter check (.getModifications result)))]
+        modifications (.getNodeModifications result)]
      modifications))
