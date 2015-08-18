@@ -6,7 +6,6 @@
 *.ear
 
 bin
-dependencies
 build
 
 .gradle
