@@ -27,6 +27,8 @@
            (org.jgrapht.graph SimpleDirectedGraph DefaultEdge)
            (org.iti.clojureJavaInterfaceVerifier.edges HasParameter HasMethod HasNamespace)))
 
+(defrecord Parameter [name is-optional])
+
 (defrecord Function [name parameters])
 
 (defrecord Namespace [name functions])
@@ -34,13 +36,13 @@
 (defrecord File [name namespaces])
 
 (defn- add-parameter-to-graph [graph source mandatory parameter]
-  (let [parameter-element (element parameter mandatory)]
+  (let [parameter-element (element (:name parameter) mandatory false)]
     (do
       (.addVertex graph parameter-element)
       (.addEdge graph source parameter-element (HasParameter.)))))
 
 (defn- add-function-to-graph [graph source mandatory function]
-  (let [element (element (:name function) false)]
+  (let [element (element (:name function) false false)]
     (do
        (.addVertex graph element)
        (.addEdge graph source element (HasMethod.))
@@ -50,7 +52,7 @@
 (defn- add-namespace-to-graph [graph file mandatory namespace]
   (let [ns-name (:name namespace)
         is-default-ns (= :default ns-name)
-        ns-element (if is-default-ns nil (element (:name namespace) false))
+        ns-element (if is-default-ns nil (element (:name namespace) false false))
         source (if is-default-ns file ns-element)]
     (do
       (if (not is-default-ns)
@@ -61,7 +63,7 @@
         (map (partial add-function-to-graph graph source mandatory) (:functions namespace))))))
 
 (defn- add-file-to-graph [graph file mandatory]
-  (let [file-element (element (:name file) false)]
+  (let [file-element (element (:name file) false false)]
     (do
       (.addVertex graph file-element)
       (doall
@@ -100,7 +102,10 @@
     (cond
       (= type-of-element File) (File. name (normalize-clojure-funcs (:namespaces clojure-element)))
       (= type-of-element Namespace) (Namespace. name (normalize-clojure-funcs (:functions clojure-element)))
-      (= type-of-element Function) (Function. name (map str (range 0 (count (:parameters clojure-element))))))))
+      (= type-of-element Function) (Function. name (normalize-clojure-func (:parameters clojure-element)))
+      :else (let [params-idx (range 0 (count clojure-element))
+                  params-with-idx (map vector clojure-element params-idx)]
+              (map #(Parameter. (str (last %)) (:is-optional (first %))) params-with-idx)))))
 
 (defn- normalize-clojure-funcs [clojure-functions]
   (map normalize-clojure-func clojure-functions))
