@@ -105,7 +105,7 @@
   (is (not (empty? modifications)))
   (is (not (nil? (get modifications key))))
   (let [modification (get modifications key)
-        type (.getType modification)]
+        type (if modification (.getType modification) nil)]
     (is (= type mod-type))))
 
 (deftest clojure2clojure-comparison-add-parameter
