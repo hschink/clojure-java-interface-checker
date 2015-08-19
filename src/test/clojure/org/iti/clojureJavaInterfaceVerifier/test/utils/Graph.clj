@@ -23,40 +23,43 @@
   (:require [org.iti.clojureJavaInterfaceVerifier.utils.Graph :as oicg])
   (:import (org.iti.structureGraph.comparison StructureGraphComparer)
            (org.iti.structureGraph.comparison.result Type)
-           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function)))
+           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function Parameter)))
+
+(defn- get-param [name]
+  (Parameter. name false))
 
 (def ^:private file-version-original
-  (let [func-add (Function. "add" ["x"])
-        func-get-ast (Function. "get-ast" ["x"])
-        func-add2 (Function. "add2" ["x"])
+  (let [func-add (Function. "add" [(get-param "x")])
+        func-get-ast (Function. "get-ast" [(get-param "x")])
+        func-add2 (Function. "add2" [(get-param "x")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
         ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-add-parameter
-  (let [func-add (Function. "add" ["x" "y"])
-        func-get-ast (Function. "get-ast" ["x"])
-        func-add2 (Function. "add2" ["x"])
+  (let [func-add (Function. "add" [(get-param "x") (get-param "y")])
+        func-get-ast (Function. "get-ast" [(get-param "x")])
+        func-add2 (Function. "add2" [(get-param "x")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
         ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-rename-method
-  (let [func-add (Function. "add" ["x"])
-        func-get-ast (Function. "get-ast" ["x"])
-        func-add2 (Function. "add2" ["x"])
-        func-get-ast2 (Function. "get-ast2" ["x"])
+  (let [func-add (Function. "add" [(get-param "x")])
+        func-get-ast (Function. "get-ast" [(get-param "x")])
+        func-add2 (Function. "add2" [(get-param "x")])
+        func-get-ast2 (Function. "get-ast2" [(get-param "x")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])
         ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add2 func-get-ast2])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-move-method
-  (let [func-add (Function. "add" ["x"])
-        func-get-ast (Function. "get-ast" ["x"])
-        func-add2 (Function. "add2" ["x"])
+  (let [func-add (Function. "add" [(get-param "x")])
+        func-get-ast (Function. "get-ast" [(get-param "x")])
+        func-add2 (Function. "add2" [(get-param "x")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-get-ast])
         ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add func-add2 func-get-ast])
         file-test (File. "test.clj" [ns-test ns-eeek])]
@@ -130,26 +133,26 @@
     (check-modification-of-type-exists modifications move-method-id Type/NodeMoved)))
 
 (def ^:private clojure-calls-in-java
-  (let [func-add (Function. "add" ["0"])
-        func-get-ast (Function. "get-ast" ["0"])
+  (let [func-add (Function. "add" [(get-param "0")])
+        func-get-ast (Function. "get-ast" [(get-param "0")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])]
     ns-test))
 
 (def ^:private clojure-calls-in-java-with-superfluous-parameter
-  (let [func-add (Function. "add" ["0", "1"])
-        func-get-ast (Function. "get-ast" ["0"])
+  (let [func-add (Function. "add" [(get-param "0"), (get-param "1")])
+        func-get-ast (Function. "get-ast" [(get-param "0")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [func-add func-get-ast])]
     ns-test))
 
 (def ^:private clojure-calls-in-java-of-missing-function
-  (let [func-add (Function. "add" ["0"])
-        func-get-ast (Function. "get-ast" ["0"])
+  (let [func-add (Function. "add" [(get-param "0")])
+        func-get-ast (Function. "get-ast" [(get-param "0")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [func-add func-get-ast])]
     ns-test))
 
 (def ^:private clojure-calls-in-java-of-missing-namespace
-  (let [func-add (Function. "add" ["0"])
-        func-get-ast (Function. "get-ast" ["0"])
+  (let [func-add (Function. "add" [(get-param "0")])
+        func-get-ast (Function. "get-ast" [(get-param "0")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.ups" [func-add func-get-ast])]
     ns-test))
 
