@@ -79,4 +79,8 @@
    (is (= (count default-funcs) 0))
    (is (= (count test-funcs) 2))
    (is (= (count eeek-funcs) 3))
+   (check-func-parameters (get-fn-by-name "add2" test-funcs) '(false))
+   (check-func-parameters (get-fn-by-name "get-ast" test-funcs) '(false))
+   (check-func-parameters (get-fn-by-name "add2" eeek-funcs) '(false))
+   (check-func-parameters (get-fn-by-name "get-ast" eeek-funcs) '(false))
    (check-func-parameters (get-fn-by-name "variadic" eeek-funcs) '(false false true))))
