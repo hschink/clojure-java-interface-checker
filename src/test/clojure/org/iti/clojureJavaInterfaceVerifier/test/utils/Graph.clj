@@ -25,8 +25,14 @@
            (org.iti.structureGraph.comparison.result Type)
            (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function Parameter)))
 
-(defn- get-param [name]
-  (Parameter. name false))
+(defn- get-param
+  ([name]
+    (Parameter. name false))
+  ([name is-optional]
+    (Parameter. name is-optional)))
+
+(defn- get-params [list]
+  (map get-param list))
 
 (defn- get-fn [name param-names]
   (Function. name (map get-param param-names)))
@@ -40,29 +46,32 @@
 (def ^:private fn-add2
   (get-fn "add2" '("x")))
 
+(def ^:private fn-variadic
+  (Function. "variadic" (concat (get-params ["x" "y"]) [(get-param "args" true)])))
+
 (def ^:private file-version-original
   (let [ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [fn-add fn-get-ast])
-        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast fn-variadic])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-add-parameter
   (let [fn-add (Function. "add" [(get-param "x") (get-param "y")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [fn-add fn-get-ast])
-        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast fn-variadic])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-rename-method
   (let [fn-get-ast2 (Function. "get-ast2" [(get-param "x")])
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [fn-add fn-get-ast])
-        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast2])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add2 fn-get-ast2 fn-variadic])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
 (def ^:private file-version-move-method
   (let [ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.Test" [fn-get-ast])
-        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add fn-add2 fn-get-ast])
+        ns-eeek (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-add fn-add2 fn-get-ast fn-variadic])
         file-test (File. "test.clj" [ns-test ns-eeek])]
     file-test))
 
@@ -77,7 +86,11 @@
   (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add2))"} nodes))
   (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(get-ast))"} nodes))
   (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(add2.HasParameter(x)))"} nodes))
-  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(get-ast.HasParameter(x)))"} nodes)))
+  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(get-ast.HasParameter(x)))"} nodes))
+  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic))"} nodes))
+  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic.HasParameter(x)))"} nodes))
+  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic.HasParameter(y)))"} nodes))
+  (is (some #{"test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic.HasParameter(args)))"} nodes)))
 
 (def add-parameter-id "test.clj.HasNamespace(org.iti.clojureJavaInterfaceVerifier.Test.HasMethod(add.HasParameter(y)))")
 
@@ -157,6 +170,21 @@
         ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.ups" [fn-add fn-get-ast])]
     ns-test))
 
+(def ^:private clojure-calls-in-java-of-variadic-function
+  (let [fn-variadic (Function. "variadic" (get-params ["0" "1" "2" "3" "4"]))
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-variadic])]
+    ns-test))
+
+(def ^:private clojure-calls-in-java-of-variadic-function-without-optional-parameters
+  (let [fn-variadic (Function. "variadic" (get-params ["0" "1"]))
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-variadic])]
+    ns-test))
+
+(def ^:private clojure-calls-in-java-of-variadic-function-with-missing-parameters
+  (let [fn-variadic (Function. "variadic" [])
+        ns-test (Namespace. "org.iti.clojureJavaInterfaceVerifier.eeek" [fn-variadic])]
+    ns-test))
+
 (deftest check-valid-clojure2java-function-mapping
   (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java])]
     (is (empty? result))))
@@ -187,3 +215,17 @@
     (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(add.HasParameter(0))" Type/NodeDeleted)
     (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(get-ast)" Type/NodeDeleted)
     (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.ups.HasMethod(get-ast.HasParameter(0))" Type/NodeDeleted)))
+
+(deftest check-variadic-fn-call-with-optional-parameters
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-variadic-function])]
+    (is (empty? result))))
+
+(deftest check-variadic-fn-call-without-optional-parameters
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-variadic-function-without-optional-parameters])]
+    (is (empty? result))))
+
+(deftest check-variadic-fn-call-with-missing-parameters
+  (let [result (oicg/check-clojure2java-function-mapping [file-version-original] [clojure-calls-in-java-of-variadic-function-with-missing-parameters])]
+    (is (= (count result) 2))
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic.HasParameter(0))" Type/NodeAdded)
+    (check-modification-of-type-exists result "org.iti.clojureJavaInterfaceVerifier.eeek.HasMethod(variadic.HasParameter(1))" Type/NodeAdded)))
