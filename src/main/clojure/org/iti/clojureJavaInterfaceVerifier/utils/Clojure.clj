@@ -37,11 +37,12 @@
     (if namespace (Namespace. namespace []) nil)))
 
 (defn- func-params [line]
-  (let [params (match-named-group #"^\(defn (?<fun>\w(\w|\-)*)\?* \[(?<args>((\w|\-)*\s*)*)\]" "args" line)]
+  (let [params (match-named-group #"^\(defn (?<fun>\w(\w|\-)*)\?* \[(?<args>((\w|\-|\&)*\s*)*)\]" "args" line)]
     (if params (let [param-names (.split params " ")
                      param-count (count param-names)
-                     optional-param (take param-count (mapcat #(if (= % "&") '(false true) '(false)) param-names))
-                     params-with-optional-flag (map vector param-names optional-param)]
+                     optional-param (take param-count (mapcat #(if (= % "&") '(true) '(false)) param-names))
+                     params-without-keyword (filter #(not= "&" %) param-names)
+                     params-with-optional-flag (map vector params-without-keyword optional-param)]
                  (map #(Parameter. (first %) (last %)) params-with-optional-flag))
       '())))
 
