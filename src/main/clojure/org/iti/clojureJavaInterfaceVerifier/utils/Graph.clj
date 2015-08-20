@@ -36,7 +36,7 @@
 (defrecord File [name namespaces])
 
 (defn- add-parameter-to-graph [graph source mandatory parameter]
-  (let [parameter-element (element (:name parameter) mandatory false)]
+  (let [parameter-element (element (:name parameter) mandatory (:is-optional parameter))]
     (do
       (.addVertex graph parameter-element)
       (.addEdge graph source parameter-element (HasParameter.)))))
