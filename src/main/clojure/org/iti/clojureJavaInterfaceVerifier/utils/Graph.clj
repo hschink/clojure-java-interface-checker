@@ -104,8 +104,12 @@
       (= type-of-element Namespace) (Namespace. name (normalize-clojure-funcs (:functions clojure-element)))
       (= type-of-element Function) (Function. name (normalize-clojure-func (:parameters clojure-element)))
       :else (let [params-idx (range 0 (count clojure-element))
-                  params-with-idx (map vector clojure-element params-idx)]
-              (map #(Parameter. (str (last %)) (:is-optional (first %))) params-with-idx)))))
+                  params-with-idx (map vector clojure-element params-idx)
+                  params (map #(let [name (str (last %))
+                                     is-optional (:is-optional (first %))
+                                     id (if is-optional (str name "___variadic") name)]
+                                     (Parameter. id is-optional)) params-with-idx)]
+              params))))
 
 (defn- normalize-clojure-funcs [clojure-functions]
   (map normalize-clojure-func clojure-functions))
