@@ -41,46 +41,46 @@
 
 (def clojure-test-file (clojure.java.io/as-file clojure-test-file-path))
 
-(defn- get-ns-with-name [name namespaces]
+(defn- get-ns-by-name [name namespaces]
   (filter #(= (:name %) name) namespaces))
 
-(defn- get-funcs-from-namespace-with-name [name namespaces]
-  (mapcat :functions (get-ns-with-name name namespaces)))
+(defn- get-fns-from-namespace-by-name [name namespaces]
+  (mapcat :functions (get-ns-by-name name namespaces)))
 
-(defn- check-func-parameters [func optional-list-flags]
-  (let [parameters (:parameters func)
+(defn- check-fn-parameters [fn optional-list-flags]
+  (let [parameters (:parameters fn)
         c (count optional-list-flags)]
     (is (= c (count parameters)))
     (is (= optional-list-flags (map #(:is-optional %) parameters)))))
 
-(deftest read-clojure-methods-by-namespace-file
+(deftest reads-clojure-source-file
  (let [result (oicc/read-clojure-methods-by-namespace [clojure-test-file])
        file (first result)]
    (is (= (count result) 1))
    (is (= (:name file) clojure-test-file-name))))
 
-(deftest read-clojure-methods-by-namespace-namespaces
+(deftest reads-clojure-namespaces
  (let [result (oicc/read-clojure-methods-by-namespace [clojure-test-file])
        namespaces (:namespaces (first result))
-       default-ns (get-ns-with-name :default namespaces)
-       test-ns (get-ns-with-name "org.iti.clojureJavaInterfaceVerifier.Test" namespaces)
-       eeek-ns (get-ns-with-name "org.iti.clojureJavaInterfaceVerifier.eeek" namespaces)]
+       default-ns (get-ns-by-name :default namespaces)
+       test-ns (get-ns-by-name "org.iti.clojureJavaInterfaceVerifier.Test" namespaces)
+       eeek-ns (get-ns-by-name "org.iti.clojureJavaInterfaceVerifier.eeek" namespaces)]
    (is (= (count namespaces) 2))
    (is (= (count default-ns) 0))
    (is (= (count test-ns) 1))
    (is (= (count eeek-ns) 1))))
 
-(deftest read-clojure-methods-by-namespace-functions
+(deftest reads-clojure-functions
  (let [result (oicc/read-clojure-methods-by-namespace [clojure-test-file])
        namespaces (:namespaces (first result))
-       default-funcs (get-funcs-from-namespace-with-name :default namespaces)
-       test-funcs (get-funcs-from-namespace-with-name "org.iti.clojureJavaInterfaceVerifier.Test" namespaces)
-       eeek-funcs (get-funcs-from-namespace-with-name "org.iti.clojureJavaInterfaceVerifier.eeek" namespaces)]
-   (is (= (count default-funcs) 0))
-   (is (= (count test-funcs) 2))
-   (is (= (count eeek-funcs) 3))
-   (check-func-parameters (get-fn-by-name "add2" test-funcs) '(false))
-   (check-func-parameters (get-fn-by-name "get-ast" test-funcs) '(false))
-   (check-func-parameters (get-fn-by-name "add2" eeek-funcs) '(false))
-   (check-func-parameters (get-fn-by-name "get-ast" eeek-funcs) '(false))
-   (check-func-parameters (get-fn-by-name "variadic" eeek-funcs) '(false false true))))
+       default-fns (get-fns-from-namespace-by-name :default namespaces)
+       test-fns (get-fns-from-namespace-by-name "org.iti.clojureJavaInterfaceVerifier.Test" namespaces)
+       eeek-fns (get-fns-from-namespace-by-name "org.iti.clojureJavaInterfaceVerifier.eeek" namespaces)]
+   (is (= (count default-fns) 0))
+   (is (= (count test-fns) 2))
+   (is (= (count eeek-fns) 3))
+   (check-fn-parameters (get-fn-by-name "add2" test-fns) '(false))
+   (check-fn-parameters (get-fn-by-name "get-ast" test-fns) '(false))
+   (check-fn-parameters (get-fn-by-name "add2" eeek-fns) '(false))
+   (check-fn-parameters (get-fn-by-name "get-ast" eeek-fns) '(false))
+   (check-fn-parameters (get-fn-by-name "variadic" eeek-fns) '(false false true))))

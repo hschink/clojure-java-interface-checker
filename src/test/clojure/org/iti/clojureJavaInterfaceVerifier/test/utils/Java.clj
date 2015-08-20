@@ -27,7 +27,7 @@
 
 (def java-test-file (clojure.java.io/as-file java-test-file-path))
 
-(deftest read-clojure-function-invocations-calls-from-java-file
+(deftest read-clojure-function-calls-from-java-file
  (let [result (oicj/clojure-calls [java-test-file])
        namespace (first result)]
    (is (= (count result) 1))
