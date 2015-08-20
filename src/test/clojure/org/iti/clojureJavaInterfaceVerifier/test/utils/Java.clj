@@ -17,7 +17,8 @@
 ;;  along with clojure-java-interface-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
 (ns org.iti.clojureJavaInterfaceVerifier.test.utils.Java
-  (:use clojure.test)
+  (:use clojure.test
+        [org.iti.clojureJavaInterfaceVerifier.test.utils.TestUtils :only [get-fn-by-name]])
   (:require [org.iti.clojureJavaInterfaceVerifier.utils.Java :as oicj])) 
 
 (def java-test-file-name "ClojureAccess.java")
@@ -32,9 +33,7 @@
    (is (= (count result) 1))
    (is (= (:name namespace) "org.iti.clojureJavaInterfaceVerifier.Test"))
    (is (= (count (:functions namespace)) 2))
-   (let [get-fn-by-name (fn [name list]
-                          (some #(when (= name (:name %)) %) list))
-         func-add (get-fn-by-name "func-add" (:functions namespace))
+   (let [func-add (get-fn-by-name "func-add" (:functions namespace))
          get-ast (get-fn-by-name "get-ast" (:functions namespace))]
      (is (not (nil? func-add)))
      (is (not (nil? get-ast)))

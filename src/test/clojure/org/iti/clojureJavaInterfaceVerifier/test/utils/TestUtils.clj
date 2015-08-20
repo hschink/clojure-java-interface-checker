@@ -16,27 +16,7 @@
 ;;   You should have received a copy of the GNU Lesser General Public License
 ;;  along with clojure-java-interface-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
-(ns org.iti.clojureJavaInterfaceVerifier.Test
-  (:require [clojure.tools.reader :as r]
-            [clojure.tools.reader.edn :as edn])
-  (:use [clojure.jvm.tools.analyzer :only [ast]]
-        [clojure.pprint :only [pprint]]))
+(ns org.iti.clojureJavaInterfaceVerifier.test.utils.TestUtils)
 
-(defn add2 [x]
-  (+ x 2))
-
-(defn get-ast [x]
-  (pprint x)
-  (edn/read-string x))
-
-(ns org.iti.clojureJavaInterfaceVerifier.eeek)
-
-(defn add2 [x]
-  (+ x 2))
-
-(defn get-ast [x]
-  (pprint x)
-  (edn/read-string x))
-
-(defn variadic [x y & args]
-  (apply + (conj args x y)))
+(defn get-fn-by-name [name list]
+  (some #(when (= name (:name %)) %) list))

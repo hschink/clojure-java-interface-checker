@@ -17,7 +17,8 @@
 ;;  along with clojure-java-interface-verifier.  If not, see <http://www.gnu.org/licenses/>.
 
 (ns org.iti.clojureJavaInterfaceVerifier.test.utils.Clojure
-  (:use clojure.test)
+  (:use clojure.test
+        [org.iti.clojureJavaInterfaceVerifier.test.utils.TestUtils :only [get-fn-by-name]])
   (:require [org.iti.clojureJavaInterfaceVerifier.utils.Clojure :as oicc])) 
 
 ; The tests expect a File record with the following content
@@ -31,7 +32,8 @@
 ;   {:name "org.iti.clojureJavaInterfaceVerifier.eeek",
 ;    :functions
 ;    [{:name "add2", :parameters ["x"]}
-;     {:name "get-ast", :parameters ["x"]}]})})
+;     {:name "get-ast", :parameters ["x"]}
+;     {:name "variadic", :parameters ["x" "y" "args"]}]})})
 
 (def clojure-test-file-name "test.clj")
 
@@ -44,6 +46,12 @@
 
 (defn- get-funcs-from-namespace-with-name [name namespaces]
   (mapcat :functions (get-ns-with-name name namespaces)))
+
+(defn- check-func-parameters [func optional-list-flags]
+  (let [parameters (:parameters func)
+        c (count optional-list-flags)]
+    (is (= c (count parameters)))
+    (is (= optional-list-flags (map #(:is-optional %) parameters)))))
 
 (deftest read-clojure-methods-by-namespace-file
  (let [result (oicc/read-clojure-methods-by-namespace [clojure-test-file])
@@ -70,4 +78,5 @@
        eeek-funcs (get-funcs-from-namespace-with-name "org.iti.clojureJavaInterfaceVerifier.eeek" namespaces)]
    (is (= (count default-funcs) 0))
    (is (= (count test-funcs) 2))
-   (is (= (count eeek-funcs) 2))))
+   (is (= (count eeek-funcs) 3))
+   (check-func-parameters (get-fn-by-name "variadic" eeek-funcs) '(false false true))))
