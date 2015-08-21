@@ -23,7 +23,7 @@
            (japa.parser.ast.visitor VoidVisitorAdapter)
            (japa.parser.ast.expr MethodCallExpr)
            (org.iti.clojureJavaInterfaceVerifier.utils RtVisitor)
-           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function)))
+           (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function Parameter)))
 
 (defn java-source-files [path]
   (get-source-files path "java"))
@@ -38,7 +38,7 @@
 (defn- convert [element]
   (let [type-of-element (type element)]
     (cond
-      (= type-of-element org.iti.clojureJavaInterfaceVerifier.utils.ClojureFunction) (Function. (.getName element) (.getParameters element))
+      (= type-of-element org.iti.clojureJavaInterfaceVerifier.utils.ClojureFunction) (Function. (.getName element) (map #(Parameter. % false) (.getParameters element)))
       (= type-of-element org.iti.clojureJavaInterfaceVerifier.utils.ClojureNamespace) (Namespace. (.getName element) (map convert (.getFunctions element))))))
 
 (defn- parse-clojure-calls [java-files]

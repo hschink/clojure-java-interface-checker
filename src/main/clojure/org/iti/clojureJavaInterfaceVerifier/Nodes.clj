@@ -18,7 +18,8 @@
 
 (ns org.iti.clojureJavaInterfaceVerifier.Nodes)
 
-(defn element [id mandatory]
+(defn element [id mandatory is-optional]
   (reify org.iti.structureGraph.nodes.IStructureElement
     (getIdentifier [_] id)
-    (isMandatory [_] mandatory)))
+    (isMandatory [_] mandatory)
+    (isOptionalList [_] is-optional)))

@@ -20,7 +20,7 @@
   (:use [clojure.pprint :only [pprint]]
         [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files get-lines]])
   (:require org.iti.clojureJavaInterfaceVerifier.utils.Graph)
-  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function]))
+  (:import [org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function Parameter]))
 
 (defn- match-named-group [regex group line]
   (let [matcher (re-matcher regex line)]
@@ -37,8 +37,14 @@
     (if namespace (Namespace. namespace []) nil)))
 
 (defn- func-params [line]
-  (let [params (match-named-group #"^\(defn (?<fun>\w(\w|\-)*)\?* \[(?<args>((\w|\-)*\s*)*)\]" "args" line)]
-    (if params (.split params " ") '())))
+  (let [params (match-named-group #"^\(defn (?<fun>\w(\w|\-)*)\?* \[(?<args>((\w|\-|\&)*\s*)*)\]" "args" line)]
+    (if params (let [param-names (.split params " ")
+                     param-count (count param-names)
+                     optional-param (take param-count (mapcat #(if (= % "&") '(true) '(false)) param-names))
+                     params-without-keyword (filter #(not= "&" %) param-names)
+                     params-with-optional-flag (map vector params-without-keyword optional-param)]
+                 (map #(Parameter. (first %) (last %)) params-with-optional-flag))
+      '())))
 
 (defn- clojure-function [line]
   (let [function (is-function-string? line)]
