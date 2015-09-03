@@ -3,7 +3,7 @@ apply plugin: 'eclipse'
 
 group = 'org.iti.clojureJavaInterfaceVerifier'
 version = '0.0.1'
-sourceCompatibility = 7
+sourceCompatibility = 8
 
 buildscript {
     repositories {
