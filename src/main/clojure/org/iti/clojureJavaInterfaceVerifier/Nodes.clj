@@ -20,6 +20,6 @@
 
 (defn element [id mandatory is-optional]
   (reify org.iti.structureGraph.nodes.IStructureElement
-    (getIdentifier [_] id)
+    (getName [_] id)
     (isMandatory [_] mandatory)
     (isOptionalList [_] is-optional)))
