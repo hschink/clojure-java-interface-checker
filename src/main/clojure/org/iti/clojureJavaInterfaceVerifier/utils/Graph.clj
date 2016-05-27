@@ -35,21 +35,21 @@
 
 (defrecord File [name namespaces])
 
-(defn- add-parameter-to-graph [graph source mandatory parameter]
-  (let [parameter-element (element (:name parameter) mandatory (:is-optional parameter))]
+(defn- add-parameter-to-graph [graph source parameter]
+  (let [parameter-element (element (:name parameter) true (:is-optional parameter))]
     (do
       (.addVertex graph parameter-element)
       (.addEdge graph source parameter-element (HasParameter.)))))
 
-(defn- add-function-to-graph [graph source mandatory function]
+(defn- add-function-to-graph [graph source function]
   (let [element (element (:name function) false false)]
     (do
        (.addVertex graph element)
        (.addEdge graph source element (HasMethod.))
        (doall
-         (map (partial add-parameter-to-graph graph element mandatory) (:parameters function))))))
+         (map (partial add-parameter-to-graph graph element) (:parameters function))))))
 
-(defn- add-namespace-to-graph [graph file mandatory namespace]
+(defn- add-namespace-to-graph [graph file namespace]
   (let [ns-name (:name namespace)
         is-default-ns (= :default ns-name)
         ns-element (if is-default-ns nil (element (:name namespace) false false))
@@ -60,36 +60,33 @@
           (.addVertex graph ns-element)
           (if-not (nil? file) (.addEdge graph file ns-element (HasNamespace.)))))
       (doall
-        (map (partial add-function-to-graph graph source mandatory) (:functions namespace))))))
+        (map (partial add-function-to-graph graph source) (:functions namespace))))))
 
-(defn- add-file-to-graph [graph file mandatory]
+(defn- add-file-to-graph [graph file]
   (let [file-element (element (:name file) false false)]
     (do
       (.addVertex graph file-element)
       (doall
-        (map (partial add-namespace-to-graph graph file-element mandatory) (:namespaces file))))))
+        (map (partial add-namespace-to-graph graph file-element) (:namespaces file))))))
 
-(defn- add-element-to-graph [graph mandatory element]
+(defn- add-element-to-graph [graph element]
   (let [type-of-element (type element)]
     (cond
-      (= type-of-element Namespace) (add-namespace-to-graph graph nil mandatory element)
-      (= type-of-element File) (add-file-to-graph graph element mandatory))))
+      (= type-of-element Namespace) (add-namespace-to-graph graph nil element)
+      (= type-of-element File) (add-file-to-graph graph element))))
 
-(defn- add-elements-to-graph [graph files mandatory]
+(defn- add-elements-to-graph [graph files]
   (doall
-    (map (partial add-element-to-graph graph mandatory) files)))
-
-(defn create-structure-graph-with-mandatory-functions [methods-by-namespace mandatory]
-  (let [graph (SimpleDirectedGraph. DefaultEdge)]
-    (add-elements-to-graph graph methods-by-namespace mandatory)
-    (StructureGraph. graph)))
+    (map (partial add-element-to-graph graph) files)))
 
 (defn create-structure-graph [methods-by-namespace]
-  (create-structure-graph-with-mandatory-functions methods-by-namespace false))
+  (let [graph (SimpleDirectedGraph. DefaultEdge)]
+    (add-elements-to-graph graph methods-by-namespace)
+    (StructureGraph. graph)))
 
 (defn- compare-clojure-java-graphs [clojure-graph java-graph]
   (let [comparer (StatementStructureGraphComparer.)
-        clojure-structure-graph (create-structure-graph-with-mandatory-functions clojure-graph true)
+        clojure-structure-graph (create-structure-graph clojure-graph)
         java-structure-graph (create-structure-graph java-graph)
         result (.compare comparer java-structure-graph clojure-structure-graph)]
     result))
