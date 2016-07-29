@@ -67,7 +67,7 @@ public class RtVisitor extends VoidVisitorAdapter<Object> {
 	private void processClojureFunctionInvocation(MethodCallExpr n,
 			ClojureFunction clojureFunction) {
 		int numberOfArgs = (n.getArgs() == null) ? 0 : n.getArgs().size();
-		
+
 		for (int x = 0; x < numberOfArgs; x++) {
 			clojureFunction.addParameters(x + "");
 		}
@@ -87,7 +87,7 @@ public class RtVisitor extends VoidVisitorAdapter<Object> {
 
 	private void prepareClojureMethodClassProcessing(MethodCallExpr n, ClojureFunction func) {
 		Node parent = n.getParentNode();
-		
+
 		if (parent instanceof VariableDeclarator) {
 			rememberDeclarationId(parent, func);
 		}
