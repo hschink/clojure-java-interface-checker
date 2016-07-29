@@ -21,15 +21,15 @@
 
 package org.iti.clojureJavaInterfaceVerifier.utils;
 
-import japa.parser.ast.Node;
-import japa.parser.ast.body.VariableDeclarator;
-import japa.parser.ast.body.VariableDeclaratorId;
-import japa.parser.ast.expr.Expression;
-import japa.parser.ast.expr.MethodCallExpr;
-import japa.parser.ast.visitor.VoidVisitorAdapter;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.body.VariableDeclaratorId;
+import com.github.javaparser.ast.expr.Expression;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 public class RtVisitor extends VoidVisitorAdapter<Object> {
 
@@ -67,7 +67,7 @@ public class RtVisitor extends VoidVisitorAdapter<Object> {
 	private void processClojureFunctionInvocation(MethodCallExpr n,
 			ClojureFunction clojureFunction) {
 		int numberOfArgs = (n.getArgs() == null) ? 0 : n.getArgs().size();
-		
+
 		for (int x = 0; x < numberOfArgs; x++) {
 			clojureFunction.addParameters(x + "");
 		}
@@ -87,7 +87,7 @@ public class RtVisitor extends VoidVisitorAdapter<Object> {
 
 	private void prepareClojureMethodClassProcessing(MethodCallExpr n, ClojureFunction func) {
 		Node parent = n.getParentNode();
-		
+
 		if (parent instanceof VariableDeclarator) {
 			rememberDeclarationId(parent, func);
 		}

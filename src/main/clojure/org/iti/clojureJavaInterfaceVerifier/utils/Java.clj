@@ -19,9 +19,9 @@
 (ns org.iti.clojureJavaInterfaceVerifier.utils.Java
   (:use [org.iti.clojureJavaInterfaceVerifier.utils.File :only [get-source-files]])
   (:import (java.io FileInputStream)
-           (japa.parser JavaParser)
-           (japa.parser.ast.visitor VoidVisitorAdapter)
-           (japa.parser.ast.expr MethodCallExpr)
+           (com.github.javaparser JavaParser)
+           (com.github.javaparser.ast.visitor VoidVisitorAdapter)
+           (com.github.javaparser.ast.expr MethodCallExpr)
            (org.iti.clojureJavaInterfaceVerifier.utils RtVisitor)
            (org.iti.clojureJavaInterfaceVerifier.utils.Graph File Namespace Function Parameter)))
 
